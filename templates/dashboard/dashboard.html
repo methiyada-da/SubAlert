@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}แดชบอร์ด | SubAlert{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <span class="eyebrow">ภาพรวมบัญชี</span>
+        <h1>สวัสดี {{ user.username }}</h1>
+        <p class="muted">ติดตาม Subscription และรอบชำระเงินของคุณได้จากที่นี่</p>
+    </div>
+</section>
+
+<section class="stats-grid" aria-label="สรุป Subscription">
+    <article class="card stat-card">
+        <span>Subscription ทั้งหมด</span>
+        <strong>{{ subscription_count }}</strong>
+    </article>
+    <article class="card stat-card accent-card">
+        <span>กำลังใช้งาน</span>
+        <strong>{{ active_subscription_count }}</strong>
+    </article>
+</section>
+
+<section class="card section-card">
+    <div class="section-heading">
+        <div>
+            <h2>รอบชำระถัดไป</h2>
+            <p class="muted">รายการที่กำลังจะถึงกำหนด</p>
+        </div>
+    </div>
+
+    {% if upcoming_subscriptions %}
+        <div class="subscription-list">
+            {% for subscription in upcoming_subscriptions %}
+                <div class="subscription-row">
+                    <div>
+                        <strong>{{ subscription.sub_name }}</strong>
+                        <span>{{ subscription.sub_plan|default:"ไม่ระบุแพ็กเกจ" }}</span>
+                    </div>
+                    <time datetime="{{ subscription.sub_next|date:'Y-m-d' }}">
+                        {{ subscription.sub_next|date:"j M Y" }}
+                    </time>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">S</div>
+            <h3>ยังไม่มี Subscription</h3>
+            <p>เมื่อเพิ่ม Subscription รายการที่ใกล้ถึงกำหนดจะแสดงที่นี่</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

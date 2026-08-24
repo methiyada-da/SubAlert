@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}เข้าสู่ระบบ | SubAlert{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-intro">
+        <span class="eyebrow">ยินดีต้อนรับกลับ</span>
+        <h1>ไม่พลาดทุก<br>รอบชำระเงิน</h1>
+        <p>เข้าสู่ระบบเพื่อตรวจสอบ Subscription และกำหนดการแจ้งเตือนของคุณ</p>
+    </div>
+
+    <div class="card auth-card">
+        <h2>เข้าสู่ระบบ</h2>
+        <p class="muted">ใช้ชื่อผู้ใช้และรหัสผ่านของคุณ</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-errors">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            <button class="button button-block" type="submit">เข้าสู่ระบบ</button>
+        </form>
+
+        <p class="auth-switch">ยังไม่มีบัญชี? <a href="{% url 'accounts:register' %}">สมัครสมาชิก</a></p>
+    </div>
+</section>
+{% endblock %}
