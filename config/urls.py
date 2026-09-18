@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from accounts import views as account_views
+
 urlpatterns = [
     path(
         '',
@@ -25,6 +27,16 @@ urlpatterns = [
         name="home",
     ),
     path('admin/', admin.site.urls),
+    path('line/connect/', account_views.line_connect, name='line_connect'),
+    path('line/callback/', account_views.line_callback, name='line_callback'),
+    path(
+        'line/test-message/',
+        account_views.line_test_message,
+        name='line_test_message',
+    ),
+    path('line/webhook/', account_views.line_webhook, name='line_webhook'),
     path('accounts/', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('notifications/', include('notifications.urls')),
+    path('subscriptions/', include('subscriptions.urls')),
 ]

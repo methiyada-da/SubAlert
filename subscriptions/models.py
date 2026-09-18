@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -31,6 +32,8 @@ class Subscription(models.Model):
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
+        null=True,
+        blank=True,
     )
 
     # เช่น
@@ -39,13 +42,16 @@ class Subscription(models.Model):
     # 1 ปี = รายปี
     # 2 สัปดาห์ = ทุก 2 สัปดาห์
     sub_cycle_value = models.PositiveIntegerField(
-        default=1,
         validators=[MinValueValidator(1)],
+        null=True,
+        blank=True,
     )
 
     sub_cycle_unit = models.CharField(
         max_length=10,
         choices=CYCLE_UNIT_CHOICES,
+        null=True,
+        blank=True,
     )
 
     sub_platform = models.CharField(
@@ -60,7 +66,10 @@ class Subscription(models.Model):
 
     sub_start = models.DateField()
 
-    sub_next = models.DateField()
+    sub_next = models.DateField(
+        null=True,
+        blank=True,
+    )
 
     trial_status = models.BooleanField(
         default=False
@@ -109,6 +118,37 @@ class Subscription(models.Model):
                 name="subscription_cycle_value_gte_1",
             ),
         ]
+
+    def clean(self):
+        super().clean()
+        errors = {}
+
+        if self.trial_status:
+            if not self.trial_end:
+                errors["trial_end"] = "กรุณาระบุวันสิ้นสุดช่วงทดลองใช้ฟรี"
+            elif self.sub_start and self.trial_end < self.sub_start:
+                errors["trial_end"] = (
+                    "วันสิ้นสุดช่วงทดลองใช้ฟรีต้องไม่อยู่ก่อนวันที่เริ่มใช้งาน"
+                )
+        else:
+            required_billing_fields = {
+                "sub_price": "กรุณากรอกราคา",
+                "sub_cycle_value": "กรุณาระบุจำนวนรอบชำระ",
+                "sub_cycle_unit": "กรุณาเลือกหน่วยรอบชำระ",
+                "sub_next": "กรุณาระบุวันที่ชำระครั้งถัดไป",
+                "pay_method": "กรุณาระบุวิธีชำระเงิน",
+            }
+            for field_name, message in required_billing_fields.items():
+                if getattr(self, field_name) in (None, ""):
+                    errors[field_name] = message
+
+            if self.sub_start and self.sub_next and self.sub_next < self.sub_start:
+                errors["sub_next"] = (
+                    "วันที่ชำระครั้งถัดไปต้องไม่อยู่ก่อนวันที่เริ่มใช้งาน"
+                )
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return self.sub_name

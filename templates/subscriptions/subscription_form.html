@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if conversion_mode %}ใช้งานต่อแบบชำระเงิน{% elif object %}แก้ไขบริการ{% else %}เพิ่มบริการ{% endif %} | SubAlert{% endblock %}
+
+{% block content %}
+<section class="narrow-page">
+    <div class="page-heading"><div>
+        <span class="eyebrow">{% if conversion_mode %}เพิ่มข้อมูลการชำระเงิน{% elif object %}แก้ไขรายการติดตาม{% else %}รายการติดตามใหม่{% endif %}</span>
+        <h1>{% if conversion_mode %}ใช้งานต่อแบบชำระเงิน{% elif object %}แก้ไขบริการ{% else %}เพิ่มบริการ{% endif %}</h1>
+        <p class="muted">{% if conversion_mode %}เติมข้อมูลการชำระเงินให้ {{ object.sub_name }} โดยใช้รายการเดิม{% else %}เลือกติดตามช่วงทดลองใช้ฟรี หรือบันทึกบริการแบบชำระเงิน{% endif %}</p>
+    </div></div>
+
+    <form id="subscription-form" class="card form-card" method="post" novalidate>
+        {% csrf_token %}
+        {{ form.sub_category }}
+        {{ form.sub_platform }}
+        {{ form.pay_method }}
+        {{ form.trial_status }}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <p class="required-note"><span class="required-mark" aria-hidden="true">*</span> จำเป็นต้องระบุ โดยบางช่องระบบจะคำนวณค่าเริ่มต้นให้</p>
+
+        <fieldset class="form-section service-mode-section">
+            <legend>รูปแบบการติดตาม{% if not conversion_mode %}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span>{% endif %}</legend>
+            {% if conversion_mode %}
+                {{ form.service_mode }}
+                <div class="mode-notice"><strong>เปลี่ยนจากทดลองใช้ฟรีเป็นแบบชำระเงิน</strong><span>ข้อมูลจะถูกบันทึกในรายการเดิม และสถานะบริการจะยังคงเปิดใช้งาน</span></div>
+            {% else %}
+                <div class="mode-selector">{{ form.service_mode }}</div>
+            {% endif %}
+            {% for error in form.service_mode.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>ข้อมูลบริการ</legend>
+            <div class="form-grid">
+                <div class="form-group form-group-wide"><label for="{{ form.sub_name.id_for_label }}">{{ form.sub_name.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label>{{ form.sub_name }}{% for error in form.sub_name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group"><label for="{{ form.sub_start.id_for_label }}">{{ form.sub_start.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label>{{ form.sub_start }}{% for error in form.sub_start.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group"><label for="{{ form.category_preset.id_for_label }}">{{ form.category_preset.label }}</label>{{ form.category_preset }}{% for error in form.category_preset.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div id="category-custom-group" class="form-group"><label for="{{ form.category_custom.id_for_label }}">{{ form.category_custom.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็นเมื่อเลือกอื่น ๆ)</span></label>{{ form.category_custom }}{% for error in form.category_custom.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group form-group-wide">
+                    <label for="{{ form.platform_preset.id_for_label }}">{{ form.platform_preset.label }}</label>
+                    {{ form.platform_preset }}
+                    {% if form.platform_preset.help_text %}<div class="help-text">{{ form.platform_preset.help_text }}</div>{% endif %}
+                    {% for error in form.platform_preset.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+                <div id="platform-custom-group" class="form-group form-group-wide" hidden>
+                    <label for="{{ form.platform_custom.id_for_label }}">{{ form.platform_custom.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็นเมื่อเลือกช่องทางอื่น ๆ)</span></label>
+                    {{ form.platform_custom }}
+                    {% for error in form.platform_custom.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+                <div id="website-url-group" class="form-group form-group-wide" hidden>
+                    <label for="{{ form.sub_url.id_for_label }}">{{ form.sub_url.label }}</label>
+                    {{ form.sub_url }}
+                    {% if form.sub_url.help_text %}<div class="help-text">{{ form.sub_url.help_text }}</div>{% endif %}
+                    {% for error in form.sub_url.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset id="trial-mode-fields" class="form-section conditional-panel">
+            <legend>ช่วงทดลองใช้ฟรี</legend>
+            <p class="section-help">เลือกระยะเวลาเพื่อให้ระบบช่วยคำนวณวันสิ้นสุด หรือแก้วันที่เองได้</p>
+            <div class="form-grid">
+                <div class="form-group"><label for="{{ form.trial_duration_preset.id_for_label }}">{{ form.trial_duration_preset.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label>{{ form.trial_duration_preset }}{% for error in form.trial_duration_preset.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div id="trial-custom-days-group" class="form-group"><label for="{{ form.trial_custom_days.id_for_label }}">{{ form.trial_custom_days.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็นเมื่อเลือกกำหนดเอง)</span></label>{{ form.trial_custom_days }}{% for error in form.trial_custom_days.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group form-group-wide"><label for="{{ form.trial_end.id_for_label }}">{{ form.trial_end.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label><div class="date-helper">{{ form.trial_end }}<button id="calculate-trial-end" class="helper-button" type="button">คำนวณใหม่</button></div><div class="help-text">ระบบคำนวณจากวันที่เริ่มใช้งาน แต่คุณสามารถแก้วันที่เองได้</div>{% for error in form.trial_end.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+            </div>
+        </fieldset>
+
+        <fieldset id="paid-mode-fields" class="form-section conditional-panel">
+            <legend>ข้อมูลการชำระเงิน</legend>
+            <p class="section-help">จำเป็นเฉพาะบริการแบบชำระเงิน</p>
+            <div class="form-grid">
+                <div class="form-group"><label for="{{ form.sub_plan.id_for_label }}">{{ form.sub_plan.label }}</label>{{ form.sub_plan }}{% for error in form.sub_plan.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group"><label for="{{ form.sub_price.id_for_label }}">{{ form.sub_price.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label><div class="input-suffix">{{ form.sub_price }}<span>บาท</span></div>{% for error in form.sub_price.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group"><label for="{{ form.payment_method_preset.id_for_label }}">{{ form.payment_method_preset.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label>{{ form.payment_method_preset }}{% for error in form.payment_method_preset.errors %}<div class="field-error">{{ error }}</div>{% endfor %}{% for error in form.pay_method.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div id="payment-method-custom-group" class="form-group" hidden><label for="{{ form.payment_method_custom.id_for_label }}">{{ form.payment_method_custom.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็นเมื่อเลือกอื่น ๆ)</span></label>{{ form.payment_method_custom }}{% for error in form.payment_method_custom.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group"><label for="{{ form.billing_cycle_preset.id_for_label }}">{{ form.billing_cycle_preset.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label>{{ form.billing_cycle_preset }}{% for error in form.billing_cycle_preset.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div id="custom-cycle-fields" class="form-group form-group-wide"><span class="group-label">กำหนดรอบชำระเอง<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็นเมื่อเลือกกำหนดเอง)</span></span><div class="inline-fields"><span>ชำระทุก</span>{{ form.sub_cycle_value }}{{ form.sub_cycle_unit }}</div>{% for error in form.sub_cycle_value.errors %}<div class="field-error">{{ error }}</div>{% endfor %}{% for error in form.sub_cycle_unit.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group form-group-wide"><label for="{{ form.sub_next.id_for_label }}">{{ form.sub_next.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label><div class="date-helper">{{ form.sub_next }}<button id="calculate-next-date" class="helper-button" type="button">คำนวณใหม่</button></div>{% if form.sub_next.help_text %}<div class="help-text">{{ form.sub_next.help_text }}</div>{% endif %}{% for error in form.sub_next.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>การแจ้งเตือนและสถานะ</legend>
+            <div class="form-grid">
+                <div class="form-group"><label for="{{ form.alert_day.id_for_label }}">{{ form.alert_day.label }}<span class="required-mark" aria-hidden="true">*</span><span class="sr-only"> (จำเป็น)</span></label><div class="input-suffix">{{ form.alert_day }}<span>วัน</span></div>{% if form.alert_day.help_text %}<div class="help-text">{{ form.alert_day.help_text }}</div>{% endif %}{% for error in form.alert_day.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-group checkbox-group"><span class="group-label">สถานะการแจ้งเตือน</span><label class="checkbox-label" for="{{ form.sub_status.id_for_label }}">{{ form.sub_status }}<span>{{ form.sub_status.label }}</span></label>{% if form.sub_status.help_text %}<div class="help-text">{{ form.sub_status.help_text }}</div>{% endif %}{% for error in form.sub_status.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+            </div>
+        </fieldset>
+
+        <div class="form-actions"><a class="button button-secondary" href="{% if object %}{% url 'subscriptions:detail' object.sub_id %}{% else %}{% url 'subscriptions:list' %}{% endif %}">ยกเลิก</a><button class="button" type="submit">{% if conversion_mode %}ยืนยันใช้งานต่อแบบชำระเงิน{% elif object %}บันทึกการแก้ไข{% else %}เพิ่มบริการ{% endif %}</button></div>
+    </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/subscription_form.js' %}" defer></script>{% endblock %}

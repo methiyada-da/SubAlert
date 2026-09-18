@@ -15,15 +15,25 @@ venv/
 # Django local data
 db.sqlite3
 *.sqlite3
+media/
+uploads/
+staticfiles/
+local_settings.py
 
 # Logs
 *.log
+logs/
 
 # Test and tooling caches
 .coverage
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+.cache/
+tmp/
+temp/
+*.tmp
+*.bak
 
 # Editors and operating systems
 .vscode/

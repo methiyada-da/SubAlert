@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}โปรไฟล์ของฉัน | SubAlert{% endblock %}
+{% block body_class %} profile-page-body{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/profile.css' %}">{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <header class="profile-page-header">
+        <nav class="profile-breadcrumb" aria-label="ตำแหน่งปัจจุบัน">
+            <a href="{% url 'dashboard:index' %}">ภาพรวม</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">ตั้งค่าบัญชี</span>
+        </nav>
+        <span class="profile-page-overline">พื้นที่ของคุณ</span>
+        <h1>โปรไฟล์ของฉัน</h1>
+        <p>จัดการข้อมูลส่วนตัว รหัสผ่าน และช่องทางรับการแจ้งเตือน</p>
+    </header>
+
+    <div class="profile-settings-layout">
+        <aside class="profile-rail" aria-label="บัญชีและเมนูการตั้งค่า">
+            <div class="profile-person">
+                <div class="profile-person-cover" aria-hidden="true"><span></span><span></span><span></span></div>
+                <span class="profile-avatar" aria-hidden="true">{{ user.username|slice:":1"|upper }}</span>
+                <div class="profile-person-copy">
+                    <span class="profile-person-label">บัญชีของคุณ</span>
+                    <strong class="profile-person-name">{{ user.username }}</strong>
+                    <small class="profile-person-email">{{ user.email|default:"ยังไม่ได้ระบุอีเมล" }}</small>
+                </div>
+            </div>
+            <span class="profile-nav-label">การตั้งค่า</span>
+            <nav class="profile-section-nav" aria-label="ส่วนต่าง ๆ ของโปรไฟล์">
+                <a class="is-current" href="#profile-details">ข้อมูลส่วนตัว</a>
+                <a href="#profile-line">การเชื่อมต่อ LINE</a>
+                <a href="#profile-security">ความปลอดภัย</a>
+                <a href="#profile-membership">รายละเอียดสมาชิก</a>
+            </nav>
+        </aside>
+
+        <div class="profile-settings-main">
+            <section id="profile-details" class="profile-setting-card profile-details-card" aria-labelledby="profile-details-title">
+                <div class="profile-card-heading">
+                    <span class="profile-card-number">01</span>
+                    <div><h2 id="profile-details-title">ข้อมูลส่วนตัว</h2><p>ชื่อที่ใช้เข้าสู่ระบบและอีเมลสำหรับบัญชีนี้</p></div>
+                </div>
+                <form class="profile-form" method="post" novalidate data-saved-username="{{ user.username }}" data-saved-email="{{ user.email }}">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="profile-field-grid">
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <div class="profile-input-wrap">
+                                    {% if field.name == 'email' %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 7 7.5 6 7.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                    {% endif %}
+                                    {{ field }}
+                                </div>
+                                {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+                                {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="profile-form-footer">
+                        <span class="profile-save-status" role="status" aria-live="polite" hidden>มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก</span>
+                        <button class="button profile-save-button" type="submit">บันทึกข้อมูลโปรไฟล์ <span aria-hidden="true">→</span></button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="profile-line" class="profile-setting-card profile-line-card" aria-labelledby="profile-line-title">
+                <div class="profile-card-heading">
+                    <span class="profile-card-number">02</span>
+                    <div><h2 id="profile-line-title">การเชื่อมต่อ LINE</h2><p>รับการแจ้งเตือนเมื่อบริการใกล้ถึงกำหนด</p></div>
+                </div>
+                <div class="profile-line-content">
+                    <div class="profile-line-status{% if user.line_status == 2 %} is-ready{% elif user.line_status == 1 %} is-pending{% endif %}">
+                        <span class="profile-line-mark" aria-hidden="true">LINE</span>
+                        <div>
+                            {% if user.line_status == 0 %}
+                                <strong><span class="profile-state-dot"></span>ยังไม่ได้เชื่อมต่อ</strong>
+                                <p>เชื่อมบัญชี LINE เพื่อเตรียมรับการแจ้งเตือนจาก SubAlert</p>
+                            {% elif user.line_status == 1 %}
+                                <strong><span class="profile-state-dot"></span>เชื่อมบัญชีแล้ว แต่ยังไม่พร้อมรับแจ้งเตือน</strong>
+                                <p>เพิ่ม LINE Official Account เป็นเพื่อน แล้วตรวจสอบสถานะอีกครั้ง</p>
+                            {% else %}
+                                <strong><span class="profile-state-dot"></span>พร้อมรับการแจ้งเตือน</strong>
+                                <p>บัญชี LINE นี้เชื่อมต่อและพร้อมรับข้อความจาก SubAlert</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if user.line_status == 0 %}
+                        <a class="button profile-line-action" href="{% url 'line_connect' %}">เชื่อมต่อ LINE <span aria-hidden="true">↗</span></a>
+                    {% elif user.line_status == 1 %}
+                        <a class="button button-secondary profile-line-action" href="{% url 'line_connect' %}">ตรวจสอบสถานะ LINE อีกครั้ง <span aria-hidden="true">↗</span></a>
+                    {% else %}
+                        <form class="profile-line-test" method="post" action="{% url 'line_test_message' %}">{% csrf_token %}<button class="button button-secondary profile-line-action" type="submit">ส่งข้อความทดสอบ <span aria-hidden="true">↗</span></button></form>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section id="profile-security" class="profile-setting-card profile-security-card" aria-labelledby="profile-security-title">
+                <div class="profile-card-heading">
+                    <span class="profile-card-number">03</span>
+                    <div><h2 id="profile-security-title">ความปลอดภัย</h2><p>ดูแลรหัสผ่านเพื่อปกป้องบัญชีของคุณ</p></div>
+                </div>
+                <div class="profile-security-content">
+                    <div><strong>รหัสผ่าน</strong><p>ใช้รหัสผ่านที่ไม่ซ้ำกับบริการอื่น และเปลี่ยนเมื่อจำเป็น</p></div>
+                    <a class="profile-text-action" href="{% url 'accounts:password_change' %}">เปลี่ยนรหัสผ่าน <span aria-hidden="true">↗</span></a>
+                </div>
+            </section>
+
+            <section id="profile-membership" class="profile-setting-card profile-membership-card" aria-labelledby="profile-membership-title">
+                <div class="profile-card-heading">
+                    <span class="profile-card-number">04</span>
+                    <div><h2 id="profile-membership-title">รายละเอียดสมาชิก</h2><p>ข้อมูลการใช้งานบัญชีของคุณ</p></div>
+                </div>
+                <dl class="profile-facts">
+                    <div><dt>สมาชิกตั้งแต่</dt><dd>{{ user.date_joined|date:"j M Y" }}</dd></div>
+                    <div><dt>เข้าสู่ระบบล่าสุด</dt><dd>{{ user.last_login|date:"j M Y H:i"|default:"ครั้งแรก" }}</dd></div>
+                    <div><dt>รายการทั้งหมด</dt><dd>{{ subscription_count }} รายการ</dd></div>
+                    <div><dt>เปิดการแจ้งเตือน</dt><dd>{{ active_subscription_count }} รายการ</dd></div>
+                </dl>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/profile.js' %}" defer></script>{% endblock %}

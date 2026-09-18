@@ -21,6 +21,8 @@ class DashboardAccessTests(TestCase):
         )
         Subscription.objects.create(
             sub_name="Active subscription",
+            sub_category="ซอฟต์แวร์",
+            sub_platform="เว็บไซต์",
             sub_price=100,
             sub_cycle_value=1,
             sub_cycle_unit="month",
@@ -67,3 +69,48 @@ class DashboardAccessTests(TestCase):
         self.assertEqual(response.context["active_subscription_count"], 1)
         self.assertContains(response, "Active subscription")
         self.assertNotContains(response, "Other user&#x27;s subscription")
+
+    def test_dashboard_separates_trial_end_from_payment_due(self):
+        trial = Subscription.objects.create(
+            sub_name="Seven day trial",
+            sub_category="การศึกษา",
+            sub_start=date(2026, 1, 1),
+            trial_status=True,
+            trial_end=date(2026, 1, 8),
+            user=self.user,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("dashboard:index"))
+
+        self.assertIn(trial, response.context["active_trials"])
+        self.assertNotIn(trial, response.context["upcoming_subscriptions"])
+        self.assertContains(response, "ทดลองใช้ฟรี")
+        self.assertContains(response, "Seven day trial")
+
+    def test_dashboard_has_persistent_shell_and_overview_content(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("dashboard:index"))
+
+        self.assertContains(response, 'id="app-sidebar"')
+        self.assertContains(response, 'id="global-service-search"')
+        self.assertContains(response, 'id="notification-toggle"')
+        self.assertContains(response, reverse("accounts:profile"))
+        self.assertContains(response, "ภาพรวมการติดตาม")
+        self.assertContains(response, "รอบชำระถัดไป")
+        self.assertContains(response, "เพิ่มบริการใหม่")
+        self.assertContains(response, "js/app_shell.js")
+        self.assertNotContains(response, 'id="service-filters"')
+
+    def test_line_banner_is_optional_and_hidden_when_ready(self):
+        self.client.force_login(self.user)
+        disconnected = self.client.get(reverse("dashboard:index"))
+        self.assertContains(disconnected, "รับการแจ้งเตือนผ่าน LINE")
+        self.assertContains(disconnected, reverse("line_connect"))
+
+        self.user.line_id = "UREADY"
+        self.user.line_status = 2
+        self.user.save(update_fields=["line_id", "line_status"])
+        ready = self.client.get(reverse("dashboard:index"))
+        self.assertNotContains(ready, "รับการแจ้งเตือนผ่าน LINE")

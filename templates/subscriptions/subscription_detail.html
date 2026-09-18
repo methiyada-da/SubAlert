@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subscription.sub_name }} | SubAlert{% endblock %}
+
+{% block content %}
+<section class="page-heading page-heading-actions">
+    <div>
+        <span class="eyebrow">รายละเอียดบริการ</span>
+        <h1>{{ subscription.sub_name }}</h1>
+        <p class="muted">{% if subscription.trial_status %}กำลังติดตามช่วงทดลองใช้ฟรี{% else %}{{ subscription.sub_plan|default:"บริการแบบชำระเงิน" }}{% endif %}</p>
+    </div>
+    <div class="action-group">
+        <a class="button button-secondary" href="{% url 'subscriptions:list' %}">กลับหน้ารายการ</a>
+        {% if subscription.trial_status and subscription.sub_status %}<a class="button" href="{% url 'subscriptions:continue_paid' subscription.sub_id %}">ใช้งานต่อแบบชำระเงิน</a>{% endif %}
+        <a class="button" href="{% url 'subscriptions:update' subscription.sub_id %}">แก้ไข</a>
+    </div>
+</section>
+
+{% if subscription.trial_status %}
+    <section class="card trial-summary">
+        <div><span class="badge badge-trial">ทดลองใช้ฟรี</span><h2>สิ้นสุดวันที่ {{ subscription.trial_end|date:"j M Y" }}</h2><p class="muted">จะแจ้งเตือนล่วงหน้า {{ subscription.alert_day }} วัน</p></div>
+        {% if subscription.sub_status %}
+            <form method="post" action="{% url 'subscriptions:deactivate' subscription.sub_id %}">
+                {% csrf_token %}<button class="button button-secondary" type="submit">ไม่ใช้ต่อ / หยุดติดตาม</button>
+            </form>
+        {% endif %}
+    </section>
+{% endif %}
+
+<section class="detail-grid">
+    <article class="card detail-card">
+        <h2>{% if subscription.trial_status %}ข้อมูลช่วงทดลองใช้ฟรี{% else %}ข้อมูลการชำระเงิน{% endif %}</h2>
+        <dl class="detail-list">
+            <div><dt>วันที่เริ่มใช้งาน</dt><dd>{{ subscription.sub_start|date:"j M Y" }}</dd></div>
+            {% if subscription.trial_status %}
+                <div><dt>วันสิ้นสุดทดลองใช้ฟรี</dt><dd>{{ subscription.trial_end|date:"j M Y" }}</dd></div>
+            {% else %}
+                <div><dt>แพ็กเกจ</dt><dd>{{ subscription.sub_plan|default:"ไม่ระบุ" }}</dd></div>
+                <div><dt>ราคา</dt><dd>{{ subscription.sub_price|floatformat:2 }} บาท</dd></div>
+                <div><dt>รอบชำระ</dt><dd>ทุก {{ subscription.sub_cycle_value }} {{ subscription.get_sub_cycle_unit_display }}</dd></div>
+                <div><dt>ชำระครั้งถัดไป</dt><dd>{{ subscription.sub_next|date:"j M Y" }}</dd></div>
+                <div><dt>วิธีชำระเงิน</dt><dd>{{ subscription.pay_method }}</dd></div>
+            {% endif %}
+            <div><dt>แจ้งเตือนล่วงหน้า</dt><dd>{{ subscription.alert_day }} วัน</dd></div>
+        </dl>
+    </article>
+
+    <article class="card detail-card">
+        <h2>ข้อมูลบริการ</h2>
+        <dl class="detail-list">
+            <div><dt>หมวดหมู่</dt><dd>{{ subscription.sub_category|default:"ไม่ระบุ" }}</dd></div>
+            <div><dt>ช่องทางที่สมัคร</dt><dd>{{ subscription.sub_platform|default:"ไม่ระบุ" }}</dd></div>
+            <div><dt>ประเภท</dt><dd>{% if subscription.trial_status %}ทดลองใช้ฟรี{% else %}แบบชำระเงิน{% endif %}</dd></div>
+            <div><dt>สถานะ</dt><dd>{% if subscription.sub_status %}<span class="badge badge-active">กำลังติดตาม</span>{% else %}<span class="badge badge-inactive">หยุดติดตาม</span>{% endif %}</dd></div>
+        </dl>
+    </article>
+</section>
+
+{% if subscription.sub_platform == "เว็บไซต์" and subscription.sub_url %}<p><a href="{{ subscription.sub_url }}" target="_blank" rel="noopener noreferrer">เปิดหน้าที่ใช้สมัครบริการ ↗</a></p>{% endif %}
+<section class="danger-zone"><a class="danger-link" href="{% url 'subscriptions:delete' subscription.sub_id %}">ลบบริการนี้</a></section>
+{% endblock %}

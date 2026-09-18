@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}รายการติดตาม | SubAlert{% endblock %}
+
+{% block content %}
+<section class="dashboard-heading subscription-page-heading">
+    <div><span class="eyebrow">รายการของฉัน</span><h1>การสมัครบริการของฉัน</h1><p>จัดการบริการแบบชำระเงินและช่วงทดลองใช้ฟรีได้ในที่เดียว</p></div>
+    <a class="button dashboard-add-button" href="{% url 'subscriptions:create' %}">＋ เพิ่มบริการใหม่</a>
+</section>
+
+<section id="service-filters" class="service-filter-bar" aria-label="ตัวกรองรายการ">
+    <div class="filter-scroll">
+        <a class="filter-chip{% if not selected_mode %} active{% endif %}" href="{% url 'subscriptions:list' %}{% if query %}?q={{ query|urlencode }}{% endif %}">ทั้งหมด</a>
+        <a class="filter-chip{% if selected_mode == 'trial' %} active{% endif %}" href="{% url 'subscriptions:list' %}?mode=trial{% if query %}&amp;q={{ query|urlencode }}{% endif %}">ทดลองใช้ฟรี</a>
+        <a class="filter-chip{% if selected_mode == 'paid' %} active{% endif %}" href="{% url 'subscriptions:list' %}?mode=paid{% if query %}&amp;q={{ query|urlencode }}{% endif %}">ชำระเงิน</a>
+    </div>
+    <span class="filter-count">{{ result_count }} รายการ</span>
+</section>
+
+{% if subscriptions %}
+    <section class="service-card-grid">
+        {% for subscription in subscriptions %}
+            <article class="service-card{% if not subscription.sub_status %} service-card-inactive{% endif %}" data-mode="{% if subscription.trial_status %}trial{% else %}paid{% endif %}">
+                <div class="service-card-top">
+                    <span class="service-logo" aria-hidden="true">{{ subscription.sub_name|slice:":1"|upper }}</span>
+                    {% if not subscription.sub_status %}<span class="badge badge-inactive">ปิดแจ้งเตือน</span>{% elif subscription.trial_status %}<span class="badge badge-trial">ทดลองใช้ฟรี</span>{% else %}<span class="badge badge-active">กำลังใช้งาน</span>{% endif %}
+                </div>
+                <div class="service-card-title"><h2><a href="{% url 'subscriptions:detail' subscription.sub_id %}">{{ subscription.sub_name }}</a></h2><p>{{ subscription.sub_category|default:"ไม่ระบุหมวดหมู่" }}</p></div>
+                <div class="service-card-meta">
+                    {% if subscription.trial_status %}
+                        <strong>ทดลองใช้ฟรี</strong><span>สิ้นสุด {{ subscription.trial_end|date:"j M Y" }}</span>
+                    {% else %}
+                        <strong>฿{{ subscription.sub_price|floatformat:2 }}</strong><span>ทุก {{ subscription.sub_cycle_value }} {{ subscription.get_sub_cycle_unit_display }}</span><small>รอบถัดไป {{ subscription.sub_next|date:"j M Y" }}</small>
+                    {% endif %}
+                </div>
+                <div class="service-card-footer"><span>แจ้งเตือนล่วงหน้า {{ subscription.alert_day }} วัน</span><a href="{% url 'subscriptions:update' subscription.sub_id %}" aria-label="แก้ไข {{ subscription.sub_name }}">แก้ไข</a></div>
+            </article>
+        {% endfor %}
+    </section>
+{% elif query or selected_mode %}
+    <section class="card dashboard-empty"><h2>ไม่พบรายการที่ตรงกัน</h2><p>ลองเปลี่ยนคำค้นหาหรือตัวกรอง</p><a class="button button-secondary" href="{% url 'subscriptions:list' %}">ล้างตัวกรอง</a></section>
+{% else %}
+    <section class="card dashboard-empty"><div class="empty-icon">S</div><h2>ยังไม่มีรายการติดตาม</h2><p>เพิ่มบริการที่กำลังทดลองใช้ฟรีหรือมีรอบชำระ เพื่อให้ SubAlert ช่วยเตือนคุณ</p><a class="button" href="{% url 'subscriptions:create' %}">เพิ่มบริการแรก</a></section>
+{% endif %}
+{% endblock %}

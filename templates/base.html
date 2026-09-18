@@ -6,36 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}SubAlert{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <header class="site-header">
-        <div class="container nav-wrap">
-            <a class="brand" href="{% url 'home' %}">SubAlert</a>
-            <nav aria-label="เมนูหลัก">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard:index' %}">แดชบอร์ด</a>
-                    <span class="nav-user">{{ user.username }}</span>
-                    <form class="inline-form" method="post" action="{% url 'accounts:logout' %}">
-                        {% csrf_token %}
-                        <button class="link-button" type="submit">ออกจากระบบ</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}">เข้าสู่ระบบ</a>
-                    <a class="button button-small" href="{% url 'accounts:register' %}">สมัครสมาชิก</a>
-                {% endif %}
-            </nav>
-        </div>
-    </header>
+<body class="{% if user.is_authenticated %}app-body{% endif %}{% block body_class %}{% endblock %}">
+    {% if user.is_authenticated %}
+        <div id="app-shell" class="dashboard-app">
+            <aside id="app-sidebar" class="dashboard-sidebar">
+                <div>
+                    <a class="dashboard-brand" href="{% url 'dashboard:index' %}"><span class="brand-mark">S</span><span>SubAlert</span></a>
+                    <nav class="dashboard-nav" aria-label="เมนูหลัก">
+                        <a class="{% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}"><span aria-hidden="true">▦</span>ภาพรวม</a>
+                        <a class="{% if request.resolver_match.namespace == 'subscriptions' and request.resolver_match.url_name != 'create' %}active{% endif %}" href="{% url 'subscriptions:list' %}"><span aria-hidden="true">▤</span>รายการติดตาม</a>
+                        <a href="{% url 'subscriptions:list' %}?mode=paid"><span aria-hidden="true">↻</span>รอบต่ออายุ</a>
+                        <a href="{% url 'subscriptions:list' %}#service-filters"><span aria-hidden="true">◇</span>หมวดหมู่</a>
+                        <a class="{% if request.resolver_match.namespace == 'subscriptions' and request.resolver_match.url_name == 'create' %}active{% endif %}" href="{% url 'subscriptions:create' %}"><span aria-hidden="true">＋</span>เพิ่มบริการ</a>
+                    </nav>
+                </div>
+                <div class="sidebar-footer">
+                    <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="sidebar-logout" type="submit"><span aria-hidden="true">↪</span>ออกจากระบบ</button></form>
+                </div>
+            </aside>
+            <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" aria-label="ปิดเมนู" hidden></button>
 
-    <main class="container main-content">
-        {% if messages %}
-            <div class="messages" aria-live="polite">
-                {% for message in messages %}
-                    <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
-                {% endfor %}
+            <section class="dashboard-workspace">
+                <header class="dashboard-topbar">
+                    <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="เปิดเมนู" aria-controls="app-sidebar" aria-expanded="false">☰</button>
+                    <form class="dashboard-search" method="get" action="{% url 'subscriptions:list' %}">
+                        <span aria-hidden="true">⌕</span>
+                        <label class="sr-only" for="global-service-search">ค้นหาบริการ</label>
+                        <input id="global-service-search" name="q" type="search" value="{{ request.GET.q|default:'' }}" placeholder="ค้นหาชื่อบริการ หมวดหมู่ หรือช่องทางสมัคร" autocomplete="off">
+                    </form>
+                    <div class="topbar-actions">
+                        <div class="notification-menu">
+                            <button id="notification-toggle" class="notification-button" type="button" aria-label="เปิดการแจ้งเตือน{% if topbar_unread_count %} มี {{ topbar_unread_count }} รายการที่ยังไม่อ่าน{% endif %}" aria-controls="notification-popover" aria-expanded="false">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                                {% if topbar_unread_count %}<span class="notification-badge">{% if topbar_unread_count > 99 %}99+{% else %}{{ topbar_unread_count }}{% endif %}</span>{% endif %}
+                            </button>
+                            <section id="notification-popover" class="notification-popover" aria-label="การแจ้งเตือนล่าสุด" hidden>
+                                <div class="notification-heading"><div><strong>การแจ้งเตือน</strong><span>รายการล่าสุดของคุณ</span></div>{% if topbar_unread_count %}<form method="post" action="{% url 'notifications:mark_all_read' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit">อ่านทั้งหมดแล้ว</button></form>{% endif %}</div>
+                                {% if topbar_notifications %}
+                                    <div class="notification-list">{% for notification in topbar_notifications %}<a class="notification-item{% if not notification.notif_read %} unread{% endif %}" href="{% url 'subscriptions:detail' notification.sub_id %}"><span class="notification-dot"></span><span><strong>{{ notification.notif_title }}</strong><small>{{ notification.notif_text }}</small><time datetime="{{ notification.notif_date|date:'c' }}">{{ notification.notif_date|date:"j M Y H:i" }}</time></span></a>{% endfor %}</div>
+                                {% else %}
+                                    <div class="notification-empty"><span aria-hidden="true">✓</span><strong>ยังไม่มีการแจ้งเตือน</strong><small>เมื่อมีรายการใกล้ถึงกำหนด จะแสดงที่นี่</small></div>
+                                {% endif %}
+                            </section>
+                        </div>
+                        <a class="dashboard-user" href="{% url 'accounts:profile' %}" aria-label="จัดการโปรไฟล์ของ {{ user.username }}"><span class="user-copy"><strong>{{ user.username }}</strong><small>บัญชีสมาชิก</small></span><span class="user-avatar" aria-hidden="true">{{ user.username|slice:":1"|upper }}</span></a>
+                    </div>
+                </header>
+                <main class="dashboard-content app-page-content">
+    {% else %}
+        <header class="site-header">
+            <div class="container nav-wrap">
+                <a class="brand" href="{% url 'home' %}">SubAlert</a>
+                <nav aria-label="เมนูหลัก"><a href="{% url 'accounts:login' %}">เข้าสู่ระบบ</a><a class="button button-small" href="{% url 'accounts:register' %}">สมัครสมาชิก</a></nav>
             </div>
+        </header>
+        <main class="container main-content">
+    {% endif %}
+
+        {% if messages %}
+            <div class="messages" aria-live="polite">{% for message in messages %}<div class="message message-{{ message.tags|default:'info' }}" data-auto-dismiss><span>{{ message }}</span><button class="message-close" type="button" aria-label="ปิดข้อความ">×</button></div>{% endfor %}</div>
         {% endif %}
         {% block content %}{% endblock %}
     </main>
+
+    {% if user.is_authenticated %}</section></div>{% endif %}
+    <script src="{% static 'js/messages.js' %}" defer></script>
+    {% if user.is_authenticated %}<script src="{% static 'js/app_shell.js' %}" defer></script>{% endif %}
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,9 +1,18 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    UserCreationForm,
+)
 
 
 class RegistrationForm(UserCreationForm):
+    error_messages = {
+        **UserCreationForm.error_messages,
+        "password_mismatch": "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
+    }
+
     email = forms.EmailField(
         label="อีเมล",
         widget=forms.EmailInput(
@@ -96,3 +105,61 @@ class LoginForm(AuthenticationForm):
             }
         ),
     )
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ("username", "email")
+        labels = {
+            "username": "ชื่อผู้ใช้",
+            "email": "อีเมล",
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"autocomplete": "username"}),
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].help_text = (
+            "ใช้สำหรับเข้าสู่ระบบ ไม่เกิน 150 ตัวอักษร"
+        )
+        self.fields["email"].required = True
+        self.fields["email"].error_messages.update(
+            {
+                "required": "กรุณากรอกอีเมล",
+                "invalid": "กรุณากรอกอีเมลให้ถูกต้อง",
+            }
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if (
+            get_user_model()
+            .objects.filter(email__iexact=email)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise forms.ValidationError("อีเมลนี้ถูกใช้งานแล้ว")
+        return email
+
+
+class ThaiPasswordChangeForm(PasswordChangeForm):
+    error_messages = {
+        **PasswordChangeForm.error_messages,
+        "password_incorrect": "รหัสผ่านปัจจุบันไม่ถูกต้อง กรุณาลองอีกครั้ง",
+        "password_mismatch": "รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน",
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].label = "รหัสผ่านปัจจุบัน"
+        self.fields["new_password1"].label = "รหัสผ่านใหม่"
+        self.fields["new_password2"].label = "ยืนยันรหัสผ่านใหม่"
+        self.fields["new_password1"].help_text = (
+            "อย่างน้อย 8 ตัวอักษร และไม่ควรคล้ายข้อมูลส่วนตัว"
+        )
+        self.fields["new_password2"].help_text = (
+            "กรอกรหัสผ่านใหม่อีกครั้งเพื่อยืนยัน"
+        )

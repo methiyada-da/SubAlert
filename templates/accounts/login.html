@@ -1,38 +1,75 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}เข้าสู่ระบบ | SubAlert{% endblock %}
+{% block body_class %} login-body{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
 
 {% block content %}
-<section class="auth-shell">
-    <div class="auth-intro">
-        <span class="eyebrow">ยินดีต้อนรับกลับ</span>
-        <h1>ไม่พลาดทุก<br>รอบชำระเงิน</h1>
-        <p>เข้าสู่ระบบเพื่อตรวจสอบ Subscription และกำหนดการแจ้งเตือนของคุณ</p>
+<section class="login-page" aria-labelledby="login-title">
+    <div class="login-hero">
+        <div class="login-hero-copy">
+            <span class="login-kicker"><span class="login-kicker-dot" aria-hidden="true"></span> ยินดีต้อนรับกลับ</span>
+            <h1 id="login-title">ไม่พลาดทุก<br><span>รอบชำระเงิน</span></h1>
+            <p>กลับมาดูทุก Subscription และเตรียมพร้อมก่อนถึงวันต่ออายุได้ในที่เดียว</p>
+        </div>
+
+        <div class="login-visual" aria-hidden="true">
+            <div class="login-visual-glow"></div>
+            <div class="login-preview">
+                <div class="login-preview-top"><span class="login-preview-logo">S</span><span>ภาพรวมบริการ</span><span class="login-preview-dots">•••</span></div>
+                <div class="login-preview-title">จัดการทุกบริการ<br>ในที่เดียว</div>
+                <div class="login-preview-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <div class="login-preview-row"><span class="login-service-icon violet">✦</span><span><strong>บริการสตรีมมิง</strong><small>กำลังติดตาม</small></span><span class="login-preview-pill">ใช้งานอยู่</span></div>
+                <div class="login-preview-row"><span class="login-service-icon coral">▣</span><span><strong>พื้นที่จัดเก็บข้อมูล</strong><small>กำลังติดตาม</small></span><span class="login-preview-pill">ใช้งานอยู่</span></div>
+            </div>
+            <div class="login-reminder"><span class="login-reminder-icon">✓</span><span><strong>เตือนก่อนถึงกำหนด</strong><small>วางแผนรายจ่ายได้ทันเวลา</small></span></div>
+            <div class="login-orbit login-orbit-one"></div>
+            <div class="login-orbit login-orbit-two"></div>
+        </div>
+        <div class="login-hero-footer"><span class="login-footer-line"></span> ทุกบริการ เป็นระเบียบ ในที่เดียว</div>
     </div>
 
-    <div class="card auth-card">
-        <h2>เข้าสู่ระบบ</h2>
-        <p class="muted">ใช้ชื่อผู้ใช้และรหัสผ่านของคุณ</p>
+    <div class="login-form-side">
+        <div class="card auth-card login-card">
+            <div class="login-card-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 4.5 7v5.1c0 4.8 3.1 7.6 7.5 8.9 4.4-1.3 7.5-4.1 7.5-8.9V7L12 3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9.5 12 1.7 1.7 3.5-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="login-card-heading">
+                <h2>เข้าสู่ระบบ</h2>
+                <p>ยินดีที่ได้พบกันอีกครั้ง เข้าสู่บัญชีของคุณเพื่อเริ่มต้น</p>
+            </div>
 
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% if form.non_field_errors %}
-                <div class="form-errors">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
-            {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors" role="alert">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+                {% endif %}
 
-            {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
-                </div>
-            {% endfor %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="login-input-wrap">
+                            {% if field.name == "password" %}
+                                <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            {% else %}
+                                <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            {% endif %}
+                            {{ field }}
+                            {% if field.name == "password" %}<button class="login-password-toggle" type="button" aria-label="แสดงรหัสผ่าน" aria-pressed="false" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.5 5.5-9.5 5.5S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg></button>{% endif %}
+                        </div>
+                        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+                    </div>
+                {% endfor %}
 
-            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-            <button class="button button-block" type="submit">เข้าสู่ระบบ</button>
-        </form>
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <button class="button button-block login-submit" type="submit">เข้าสู่ระบบ <span aria-hidden="true"></span></button>
+            </form>
 
-        <p class="auth-switch">ยังไม่มีบัญชี? <a href="{% url 'accounts:register' %}">สมัครสมาชิก</a></p>
+            <div class="login-card-divider"><span>ยังไม่มีบัญชี?</span></div>
+            <a class="login-register-link" href="{% url 'accounts:register' %}">สร้างบัญชีใหม่ <span aria-hidden="true"></span></a>
+        </div>
+        <p class="login-side-note">จัดการ Subscription อย่างมั่นใจไปกับ SubAlert</p>
     </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/login.js' %}" defer></script>{% endblock %}

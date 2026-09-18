@@ -1,55 +1,76 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}แดชบอร์ด | SubAlert{% endblock %}
+{% block title %}ภาพรวม | SubAlert{% endblock %}
+{% block body_class %} dashboard-home-body{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard-home.css' %}">{% endblock %}
 
 {% block content %}
-<section class="page-heading">
-    <div>
-        <span class="eyebrow">ภาพรวมบัญชี</span>
-        <h1>สวัสดี {{ user.username }}</h1>
-        <p class="muted">ติดตาม Subscription และรอบชำระเงินของคุณได้จากที่นี่</p>
+<section class="dashboard-heading overview-heading" aria-labelledby="overview-title">
+    <div class="overview-hero-copy">
+        <span class="overview-hero-kicker"><span aria-hidden="true"></span> แดชบอร์ดของคุณ</span>
+        <h1 id="overview-title">ภาพรวมการติดตาม</h1>
+        <p>บริการที่ใช้ วันสิ้นสุดทดลองใช้ฟรี และรอบชำระถัดไป<br class="overview-desktop-break"> ดูครบได้ในหน้าเดียว</p>
+        <a class="button dashboard-add-button" href="{% url 'subscriptions:create' %}"><span aria-hidden="true">＋</span> เพิ่มบริการใหม่ <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="overview-hero-art" aria-hidden="true">
+        <div class="overview-art-orbit"></div>
+        <div class="overview-art-card"><span class="overview-art-check">✓</span><span class="overview-art-line"></span><span class="overview-art-line short"></span><div class="overview-art-days"><i></i><i></i><i class="selected"></i><i></i><i></i></div></div>
+        <span class="overview-art-spark one">✦</span><span class="overview-art-spark two">✧</span>
     </div>
 </section>
 
-<section class="stats-grid" aria-label="สรุป Subscription">
-    <article class="card stat-card">
-        <span>Subscription ทั้งหมด</span>
-        <strong>{{ subscription_count }}</strong>
-    </article>
-    <article class="card stat-card accent-card">
-        <span>กำลังใช้งาน</span>
-        <strong>{{ active_subscription_count }}</strong>
-    </article>
+{% if user.line_status == 0 %}
+<section class="line-connect-banner">
+    <div class="line-banner-icon" aria-hidden="true">LINE</div>
+    <div class="line-banner-copy"><span class="line-banner-kicker">ตั้งค่าอีกเพียงขั้นเดียว</span><strong>รับการแจ้งเตือนผ่าน LINE</strong><p>เชื่อมต่อ LINE เพื่อรับแจ้งเตือนก่อนหมดทดลองใช้ฟรีและก่อนถึงรอบชำระ</p></div>
+    <a class="button line-connect-button" href="{% url 'line_connect' %}">เชื่อมต่อ LINE <span aria-hidden="true">↗</span></a>
 </section>
+{% elif user.line_status == 1 %}
+<section class="line-connect-banner line-connect-pending">
+    <div class="line-banner-icon" aria-hidden="true">LINE</div>
+    <div class="line-banner-copy"><span class="line-banner-kicker">รอดำเนินการ</span><strong>เชื่อมบัญชีแล้ว แต่ยังไม่พร้อมรับการแจ้งเตือน</strong><p>เพิ่ม LINE Official Account เป็นเพื่อน แล้วตรวจสอบสถานะอีกครั้ง</p></div>
+    <a class="button button-secondary line-recheck-button" href="{% url 'line_connect' %}">ตรวจสอบอีกครั้ง <span aria-hidden="true">↗</span></a>
+</section>
+{% endif %}
 
-<section class="card section-card">
-    <div class="section-heading">
-        <div>
-            <h2>รอบชำระถัดไป</h2>
-            <p class="muted">รายการที่กำลังจะถึงกำหนด</p>
-        </div>
+<section class="overview-stats-section" aria-labelledby="overview-stats-title">
+    <div class="overview-section-intro"><div><span class="overview-section-kicker">ภาพรวมบัญชี</span><h2 id="overview-stats-title">บริการของคุณในตอนนี้</h2></div><a href="{% url 'subscriptions:list' %}">ดูรายการทั้งหมด <span aria-hidden="true">→</span></a></div>
+    <div class="overview-stats">
+        <article class="overview-stat"><div class="overview-stat-top"><span>รายการทั้งหมด</span><span class="overview-stat-icon" aria-hidden="true">▦</span></div><strong>{{ subscription_count }}</strong><small>บริการที่บันทึกไว้ทั้งหมด</small></article>
+        <article class="overview-stat primary"><div class="overview-stat-top"><span>เปิดแจ้งเตือน</span><span class="overview-stat-icon" aria-hidden="true">◉</span></div><strong>{{ active_subscription_count }}</strong><small>บริการที่กำลังติดตาม</small></article>
+        <article class="overview-stat warning"><div class="overview-stat-top"><span>ทดลองใช้ฟรี</span><span class="overview-stat-icon" aria-hidden="true">✦</span></div><strong>{{ trial_count }}</strong><small>ช่วงทดลองที่ยังเปิดใช้งาน</small></article>
+        <article class="overview-stat success"><div class="overview-stat-top"><span>แบบชำระเงิน</span><span class="overview-stat-icon" aria-hidden="true">฿</span></div><strong>{{ paid_count }}</strong><small>บริการที่มีรอบชำระ</small></article>
     </div>
-
-    {% if upcoming_subscriptions %}
-        <div class="subscription-list">
-            {% for subscription in upcoming_subscriptions %}
-                <div class="subscription-row">
-                    <div>
-                        <strong>{{ subscription.sub_name }}</strong>
-                        <span>{{ subscription.sub_plan|default:"ไม่ระบุแพ็กเกจ" }}</span>
-                    </div>
-                    <time datetime="{{ subscription.sub_next|date:'Y-m-d' }}">
-                        {{ subscription.sub_next|date:"j M Y" }}
-                    </time>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">S</div>
-            <h3>ยังไม่มี Subscription</h3>
-            <p>เมื่อเพิ่ม Subscription รายการที่ใกล้ถึงกำหนดจะแสดงที่นี่</p>
-        </div>
-    {% endif %}
 </section>
+
+<section class="overview-due-section" aria-labelledby="overview-due-title">
+    <div class="overview-section-intro"><div><span class="overview-section-kicker">กำหนดการ</span><h2 id="overview-due-title">สิ่งที่ต้องติดตาม</h2></div><p>เรียงตามวันสิ้นสุดและวันชำระ</p></div>
+<div class="overview-columns">
+    <article class="overview-panel">
+        <div class="overview-panel-heading"><div><span class="panel-icon trial" aria-hidden="true">✦</span><div><h3>วันสิ้นสุดทดลองใช้ฟรี</h3><p>ตรวจสอบก่อนเริ่มคิดค่าบริการ</p></div></div><a href="{% url 'subscriptions:list' %}?mode=trial">ดูทั้งหมด <span aria-hidden="true">→</span></a></div>
+        {% if active_trials %}
+            <div class="overview-list">{% for subscription in active_trials %}<a href="{% url 'subscriptions:detail' subscription.sub_id %}"><span class="service-logo">{{ subscription.sub_name|slice:":1"|upper }}</span><span class="overview-item-copy"><strong>{{ subscription.sub_name }}</strong><small>เตือนล่วงหน้า {{ subscription.alert_day }} วัน</small></span><span class="overview-item-date"><small class="{% if subscription.trial_end < today %}date-overdue{% elif subscription.trial_end == today %}date-today{% endif %}">{% if subscription.trial_end < today %}เลยกำหนด{% elif subscription.trial_end == today %}ครบกำหนดวันนี้{% else %}สิ้นสุดวันที่{% endif %}</small><time datetime="{{ subscription.trial_end|date:'Y-m-d' }}">{{ subscription.trial_end|date:"j M Y" }}</time></span><span class="overview-row-arrow" aria-hidden="true">↗</span></a>{% endfor %}</div>
+        {% else %}
+            <div class="panel-empty"><span class="panel-empty-icon" aria-hidden="true">✦</span><strong>ยังไม่มีช่วงทดลองใช้ฟรี</strong><p>เพิ่มบริการที่กำลังทดลอง เพื่อให้เราเตือนก่อนสิ้นสุด</p><a href="{% url 'subscriptions:create' %}">เพิ่มรายการทดลองใช้ฟรี <span aria-hidden="true">→</span></a></div>
+        {% endif %}
+    </article>
+
+    <article class="overview-panel">
+        <div class="overview-panel-heading"><div><span class="panel-icon paid" aria-hidden="true">฿</span><div><h3>รอบชำระถัดไป</h3><p>บริการที่กำลังจะถึงกำหนด</p></div></div><a href="{% url 'subscriptions:list' %}?mode=paid">ดูทั้งหมด <span aria-hidden="true">→</span></a></div>
+        {% if upcoming_subscriptions %}
+            <div class="overview-list">{% for subscription in upcoming_subscriptions %}<a href="{% url 'subscriptions:detail' subscription.sub_id %}"><span class="service-logo">{{ subscription.sub_name|slice:":1"|upper }}</span><span class="overview-item-copy"><strong>{{ subscription.sub_name }}</strong><small>฿{{ subscription.sub_price|floatformat:2 }} · ทุก {{ subscription.sub_cycle_value }} {{ subscription.get_sub_cycle_unit_display }}</small></span><span class="overview-item-date"><small class="{% if subscription.sub_next < today %}date-overdue{% elif subscription.sub_next == today %}date-today{% endif %}">{% if subscription.sub_next < today %}เลยกำหนด{% elif subscription.sub_next == today %}ครบกำหนดวันนี้{% else %}ชำระวันที่{% endif %}</small><time datetime="{{ subscription.sub_next|date:'Y-m-d' }}">{{ subscription.sub_next|date:"j M Y" }}</time></span><span class="overview-row-arrow" aria-hidden="true">↗</span></a>{% endfor %}</div>
+        {% else %}
+            <div class="panel-empty"><span class="panel-empty-icon" aria-hidden="true">◷</span><strong>ยังไม่มีรอบชำระถัดไป</strong><p>บันทึกบริการที่จ่ายประจำ เพื่อดูวันชำระได้ที่นี่</p><a href="{% url 'subscriptions:create' %}">เพิ่มบริการแบบชำระเงิน <span aria-hidden="true">→</span></a></div>
+        {% endif %}
+    </article>
+</div>
+</section>
+
+{% if recent_subscriptions %}
+<section class="recent-section">
+    <div class="recent-heading"><div><span class="overview-section-kicker">อัปเดตล่าสุด</span><h2>รายการล่าสุด</h2><p>บริการที่เพิ่มล่าสุด</p></div><a href="{% url 'subscriptions:list' %}">เปิดหน้ารายการติดตาม <span aria-hidden="true">→</span></a></div>
+    <div class="recent-grid">{% for subscription in recent_subscriptions %}<a class="recent-card" href="{% url 'subscriptions:detail' subscription.sub_id %}"><span class="service-logo">{{ subscription.sub_name|slice:":1"|upper }}</span><div><strong>{{ subscription.sub_name }}</strong><small>{% if subscription.trial_status %}ทดลองใช้ฟรีถึง {{ subscription.trial_end|date:"j M Y" }}{% else %}รอบถัดไป {{ subscription.sub_next|date:"j M Y" }}{% endif %}</small></div></a>{% endfor %}</div>
+</section>
+{% endif %}
 {% endblock %}

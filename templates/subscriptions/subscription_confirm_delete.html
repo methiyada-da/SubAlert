@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}ลบ {{ subscription.sub_name }} | SubAlert{% endblock %}
+
+{% block content %}
+<section class="confirm-shell">
+    <div class="card confirm-card">
+        <div class="danger-icon">!</div>
+        <span class="eyebrow danger-text">ยืนยันการลบ</span>
+        <h1>ลบ {{ subscription.sub_name }}?</h1>
+        <p class="muted">รายการและการแจ้งเตือนที่เกี่ยวข้องจะถูกลบ การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions centered-actions">
+                <a class="button button-secondary" href="{% url 'subscriptions:detail' subscription.sub_id %}">ยกเลิก</a>
+                <button class="button button-danger" type="submit">ยืนยันการลบ</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
