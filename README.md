@@ -4,7 +4,7 @@
 
 ## สถานะโปรเจกต์
 
-SubAlert ยังอยู่ระหว่างการพัฒนา ฟีเจอร์บางส่วนยังไม่สมบูรณ์ โค้ดปัจจุบันเป็น Mini Project สำหรับใช้ใน Portfolio และยังไม่ใช่ระบบที่พร้อมใช้งานในระดับ Production
+SubAlert ยังอยู่ระหว่างการพัฒนา ฟีเจอร์บางส่วนยังไม่สมบูรณ์ และยังไม่ใช่ระบบที่พร้อมใช้งานในระดับ Production
 
 ## เกี่ยวกับโปรเจกต์
 
@@ -36,7 +36,7 @@ Workflow เหล่านี้ยังพัฒนาไม่เสร็�
 - Python 3.13
 - Django 6.1
 - SQLite สำหรับการพัฒนาในเครื่อง
-- HTML, CSS, and vanilla JavaScript
+- HTML, CSS และ Vanilla JavaScript
 - LINE Login and LINE Messaging APIs
 - `python-dotenv` สำหรับจัดการ Environment Variables ในเครื่อง
 
@@ -44,7 +44,7 @@ Workflow เหล่านี้ยังพัฒนาไม่เสร็�
 
 ```text
 accounts/       Authentication, โปรไฟล์, การจัดการรหัสผ่าน และการเชื่อมบัญชี LINE
-config/         การตั้งค่าโปรเจกต์ Django และ root URL configuration
+config/         การตั้งค่าโปรเจกต์ Django และ การกำหนด URL หลักของโปรเจก
 dashboard/      Dashboard แยกตามผู้ใช้
 notifications/  Notification model, การแสดงผลบน top bar และสถานะการอ่าน
 subscriptions/  Models, forms, views, date logic และ URLs สำหรับ Subscription
