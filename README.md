@@ -1,87 +1,85 @@
 # SubAlert
 
-> **Project Status: Work in Progress / In Development**
+> **สถานะโปรเจกต์: อยู่ระหว่างการพัฒนา (Work in Progress / In Development)**
 
-## Project Status
+## สถานะโปรเจกต์
 
-SubAlert is still under active development. Some features are incomplete and the current codebase should be treated as a portfolio mini project rather than a production-ready service.
+SubAlert ยังอยู่ระหว่างการพัฒนา ฟีเจอร์บางส่วนยังไม่สมบูรณ์ โค้ดปัจจุบันเป็น Mini Project สำหรับใช้ใน Portfolio และยังไม่ใช่ระบบที่พร้อมใช้งานในระดับ Production
 
-ระบบยังอยู่ระหว่างพัฒนา และบางฟีเจอร์ยังไม่สมบูรณ์
+## เกี่ยวกับโปรเจกต์
 
-## About the Project
+SubAlert เป็นเว็บแอปพลิเคชันที่พัฒนาด้วย Django สำหรับรวบรวมและจัดการข้อมูล Subscription และ Free Trial ไว้ในที่เดียว ช่วยให้ผู้ใช้ที่เข้าสู่ระบบแล้วสามารถตรวจสอบบริการที่กำลังใช้งาน วันตัดรอบครั้งถัดไป และวันสิ้นสุดช่วงทดลองใช้ฟรี พร้อมส่วนแสดงการแจ้งเตือนที่ยังอยู่ในระยะเริ่มต้นและการเชื่อมต่อบัญชี LINE
 
-SubAlert is a Django web application for keeping subscription and free-trial information in one place. It helps each signed-in user review active services, upcoming billing dates, and trial end dates, with an early-stage notification interface and LINE account integration.
+## ฟีเจอร์ที่ใช้งานได้ในปัจจุบัน
 
-## Current Features
+- สมัครสมาชิก เข้าสู่ระบบ และออกจากระบบ
+- แก้ไขโปรไฟล์และเปลี่ยนรหัสผ่าน
+- จัดการ Subscription แบบชำระเงินและ Free Trial
+- คำนวณวันตัดรอบโดยคำนึงถึงจำนวนวันจริงในแต่ละเดือนและปีอธิกสุรทิน
+- Dashboard แยกตามผู้ใช้ พร้อมการค้นหาและกรองรายการ Subscription
+- ตรวจสอบความเป็นเจ้าของข้อมูลก่อนดูรายละเอียด แก้ไข ปิดการติดตาม เปลี่ยนจาก Free Trial เป็นแบบชำระเงิน และลบ Subscription
+- เชื่อมบัญชี LINE เข้ากับบัญชี SubAlert ที่ผ่านการเข้าสู่ระบบแล้ว
+- รองรับ LINE webhook ที่ตรวจสอบลายเซ็นสำหรับเหตุการณ์ follow และ unfollow
+- ส่งข้อความทดสอบผ่าน LINE ไปยังบัญชีที่เชื่อมต่อแล้ว
+- แสดงรายการแจ้งเตือนภายในเว็บและทำเครื่องหมายรายการที่มีอยู่ทั้งหมดว่าอ่านแล้ว
 
-- User registration, login, and logout
-- Profile editing and password changes
-- Paid-subscription and free-trial management
-- Calendar-aware billing-date calculation
-- Per-user dashboard and subscription search/filtering
-- Ownership checks for subscription detail, update, deactivate, conversion, and deletion
-- Linking a LINE account to an already authenticated SubAlert account
-- Signed LINE webhook handling for follow and unfollow events
-- Sending a LINE test message for a connected account
-- In-app notification list and mark-all-read action for existing notification records
+## ฟีเจอร์ที่กำลังพัฒนา
 
-## In Development / Planned Features
+- การตั้งเวลาสร้างการแจ้งเตือนอัตโนมัติ
+- Workflow แบบครบวงจรสำหรับสร้างและส่งการแจ้งเตือนวันตัดรอบและวันสิ้นสุด Free Trial
+- การส่งซ้ำเมื่อเกิดข้อผิดพลาดและการติดตามสถานะการทำงานของระบบแจ้งเตือน
 
-- Automatic notification scheduling
-- End-to-end reminder generation and delivery for billing and trial deadlines
-- Delivery retry and operational monitoring for notifications
-
-These workflows are not complete in the current source and are not presented as finished features.
+Workflow เหล่านี้ยังพัฒนาไม่เสร็จใน source ปัจจุบัน และยังไม่ถือเป็นฟีเจอร์ที่สมบูรณ์
 
 ## Tech Stack
 
 - Python 3.13
 - Django 6.1
-- SQLite for local development
+- SQLite สำหรับการพัฒนาในเครื่อง
 - HTML, CSS, and vanilla JavaScript
 - LINE Login and LINE Messaging APIs
-- `python-dotenv` for local environment configuration
+- `python-dotenv` สำหรับจัดการ Environment Variables ในเครื่อง
 
-## Project Structure
+## โครงสร้างโปรเจกต์
 
 ```text
-accounts/       Authentication, profiles, password management, and LINE linking
-config/         Django project settings and root URL configuration
-dashboard/      Per-user dashboard
-notifications/  Notification model, top-bar display, and read state
-subscriptions/  Subscription models, forms, views, date logic, and URLs
-static/         CSS and JavaScript assets
-templates/      Shared and app-specific Django templates
+accounts/       Authentication, โปรไฟล์, การจัดการรหัสผ่าน และการเชื่อมบัญชี LINE
+config/         การตั้งค่าโปรเจกต์ Django และ root URL configuration
+dashboard/      Dashboard แยกตามผู้ใช้
+notifications/  Notification model, การแสดงผลบน top bar และสถานะการอ่าน
+subscriptions/  Models, forms, views, date logic และ URLs สำหรับ Subscription
+static/         ไฟล์ CSS และ JavaScript
+templates/      Django templates ส่วนกลางและแยกตามแอป
 ```
 
-## Installation
+## การติดตั้ง
 
-1. Clone the repository and enter the project directory.
-2. Create and activate a Python virtual environment.
-3. Install dependencies:
+1. Clone repository และเข้าไปที่ไดเรกทอรีของโปรเจกต์
+2. สร้างและเปิดใช้งาน Python virtual environment
+3. ติดตั้ง dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Copy `.env.example` to `.env` and replace the safe placeholders with local values.
-5. Apply migrations:
+4. คัดลอก `.env.example` เป็น `.env` และแทนที่ safe placeholders ด้วยค่าที่ใช้ในเครื่อง
+5. ใช้งาน migrations:
 
    ```bash
    python manage.py migrate
    ```
 
-6. Start the local development server:
+6. เริ่ม local development server:
 
    ```bash
    python manage.py runserver
    ```
 
-The default example configuration supports local HTTP development on `127.0.0.1` and `localhost`.
+การตั้งค่าตัวอย่างเริ่มต้นรองรับการพัฒนาผ่าน HTTP ในเครื่องที่ `127.0.0.1` และ `localhost`
 
 ## Environment Variables
 
-The application recognizes the following variables. Secret values must be stored only in a local or deployment environment, never committed to Git.
+แอปรองรับ Environment Variables ต่อไปนี้ ค่า secret ต้องจัดเก็บไว้เฉพาะใน environment ของเครื่องหรือระบบ deployment และห้าม commit ลง Git
 
 ```text
 DJANGO_SECRET_KEY
@@ -102,21 +100,21 @@ LINE_MESSAGING_CHANNEL_SECRET
 LINE_MESSAGING_CHANNEL_ACCESS_TOKEN
 ```
 
-`ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` are comma-separated lists. Boolean values accept `1`, `true`, `yes`, or `on` as true values. The console email backend is the local default; a deployed environment must configure an appropriate production backend.
+`ALLOWED_HOSTS` และ `CSRF_TRUSTED_ORIGINS` เป็นรายการที่คั่นด้วยเครื่องหมาย comma ส่วนค่า Boolean รองรับ `1`, `true`, `yes` หรือ `on` สำหรับค่า true โดย local development ใช้ console email backend เป็นค่าเริ่มต้น และ environment ที่ deploy ต้องกำหนด production backend ที่เหมาะสม
 
 ## LINE Integration
 
-The current LINE flow links a LINE account to a SubAlert user who is already logged in. It is **not** a replacement for signing in to SubAlert with LINE.
+LINE flow ปัจจุบันใช้สำหรับเชื่อมบัญชี LINE เข้ากับผู้ใช้ SubAlert ที่ login อยู่แล้ว โดย **ไม่ใช่การ Login เข้า SubAlert ด้วย LINE**
 
-Create the relevant channels in the LINE Developers Console, provide the channel credentials through environment variables, and configure `LINE_CALLBACK_URL` to match the registered callback exactly. Production must use a stable HTTPS callback URL; temporary tunnel addresses should only be used during development.
+ผู้พัฒนาต้องสร้าง channel ที่เกี่ยวข้องใน LINE Developers Console กำหนด channel credentials ผ่าน Environment Variables และตั้งค่า `LINE_CALLBACK_URL` ให้ตรงกับ callback ที่ลงทะเบียนไว้ทุกตัวอักษร สำหรับ Production ต้องใช้ stable HTTPS callback URL ส่วน temporary tunnel ควรใช้เฉพาะระหว่างการพัฒนา
 
-The webhook endpoint verifies the LINE signature before updating the linked account's follow status. LINE access tokens and channel secrets must never be committed.
+Webhook endpoint จะตรวจสอบ LINE signature ก่อนอัปเดตสถานะ follow ของบัญชีที่เชื่อมต่อ และห้าม commit LINE access token หรือ channel secret ลง repository
 
-## Testing
+## การทดสอบ
 
-The project currently has 88 automated Django tests covering authentication, profile management, LINE integration, subscriptions, dashboard isolation, and existing notification behavior.
+ปัจจุบันโปรเจกต์มี automated Django tests จำนวน 88 tests ครอบคลุม Authentication, การจัดการโปรไฟล์, LINE Integration, Subscription, การแยกข้อมูลบน Dashboard ตามผู้ใช้ และพฤติกรรมของระบบแจ้งเตือนที่มีอยู่ในปัจจุบัน
 
-Run the checks with:
+รันการตรวจสอบด้วยคำสั่ง:
 
 ```bash
 python manage.py check
@@ -124,23 +122,32 @@ python manage.py test
 python manage.py makemigrations --check --dry-run
 ```
 
-## Known Limitations
+## ข้อจำกัดปัจจุบัน
 
-- Notification scheduling and automatic reminder delivery are not implemented end to end.
-- The default database is intended for local development, not production deployment.
-- Production hosting, email delivery, HTTPS, and public host configuration must be supplied by the deployment environment.
-- Automated tests do not yet cover browser-level JavaScript behavior.
-- The UI and styles are still evolving while the project is in development.
+- Notification scheduling และการส่งข้อความแจ้งเตือนอัตโนมัติยังไม่ถูกพัฒนาให้ทำงานครบวงจร
+- ฐานข้อมูลเริ่มต้นออกแบบมาสำหรับ local development ไม่ใช่ production deployment
+- Environment ที่ใช้ deploy ต้องจัดเตรียม Production hosting, email delivery, HTTPS และ public host configuration
+- Automated tests ยังไม่ครอบคลุมพฤติกรรมของ JavaScript ในระดับ browser
+- UI และ styles ยังอาจมีการเปลี่ยนแปลงระหว่างการพัฒนา
 
 ## Security / Privacy
 
-- `.env`, local SQLite databases, virtual environments, caches, logs, uploads, and generated static output are excluded from version control.
-- Repository examples contain variable names and safe placeholders only.
-- Production deployments must use a new strong `DJANGO_SECRET_KEY`, HTTPS-only cookies, HTTPS redirect, HSTS, a stable host name, and a production email backend.
-- Do not publish local databases because they may contain account, email, LINE user ID, session, and subscription data.
+- `.env`, ฐานข้อมูล SQLite ในเครื่อง, virtual environments, caches, logs, uploads และ generated static output ถูกแยกออกจาก version control
+- ตัวอย่างใน repository มีเฉพาะชื่อ variables และ safe placeholders
+- Production deployment ต้องใช้ `DJANGO_SECRET_KEY` ใหม่ที่มีความปลอดภัยสูง, cookies ที่ส่งผ่าน HTTPS เท่านั้น, HTTPS redirect, HSTS, host name ที่เสถียร และ production email backend
+- ห้ามเผยแพร่ฐานข้อมูลในเครื่อง เพราะอาจมีข้อมูลบัญชี อีเมล LINE user ID, session และข้อมูล Subscription
 
-## Author / My Responsibilities
+## ผู้พัฒนา / ความรับผิดชอบ
 
-**Author:** Methiyada
+**ผู้พัฒนา:** Methiyada
 
-SubAlert is an individual mini project. I am responsible for requirements and data modeling, Django backend development, authentication and authorization, subscription workflows, LINE integration, UI implementation, automated tests, and project documentation.
+SubAlert เป็น Mini Project งานเดี่ยว โดยรับผิดชอบงานดังต่อไปนี้:
+
+- วิเคราะห์ความต้องการและออกแบบข้อมูล
+- พัฒนา Django backend
+- พัฒนา Authentication / Authorization
+- ออกแบบและพัฒนา Subscription workflows
+- พัฒนา LINE Integration
+- พัฒนา UI
+- เขียน Automated tests
+- จัดทำ Documentation
